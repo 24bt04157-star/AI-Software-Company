@@ -23,9 +23,9 @@ AI Software Company is an AI-powered multi-agent platform that simulates a real 
 
 ## Team Members
 - Ayushi Shah
-- Manav
-- Saniya
-- Ziya
+- Manav Shukla 
+- Saniya Saiyed 
+- Ziya Shukla
 
 ## Status
 🚧 Proposal Phase
