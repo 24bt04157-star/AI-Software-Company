@@ -12,8 +12,8 @@
 |---|---|
 | **Ayushi Shah** | Project Lead & Full-Stack Integration |
 | **Manav Shukla** | Backend & API Development |
-| **Ziya Shukla** | AI Agent & Documentation |
-| **Saniya Saiyed** | Database, QA & UI Support |
+| **Ziya Shukla** | databse & Documentation |
+| **Saniya Saiyed** | backend |
 
 **Department:** Computer Science & Engineering  
 **Project:** Advanced Web Technology (AWT)  
