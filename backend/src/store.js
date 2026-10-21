@@ -9,7 +9,39 @@ let mongo=false, db={users:[],projects:[]};
 const User=mongoose.models.User||mongoose.model('User',new mongoose.Schema({name:String,email:{type:String,unique:true,lowercase:true},passwordHash:String},{timestamps:true}));
 const Project=mongoose.models.Project||mongoose.model('Project',new mongoose.Schema({ownerId:String,title:String,idea:String,platform:String,status:String,requirements:Object,conversation:Array,artifacts:Array,tasks:Array,bugs:Array},{timestamps:true}));
 async function save(){await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,JSON.stringify(db,null,2));}
-export async function initStore(){
+
+export async function initStore() {
+  if (process.env.MONGODB_URI) {
+    try {
+      await mongoose.connect(process.env.MONGODB_URI, {
+        serverSelectionTimeoutMS: 10000,
+      });
+
+      mongo = true;
+      console.log("MongoDB connected");
+      return;
+    } catch (error) {
+      console.error("MongoDB connection failed:", error.message);
+
+      if (process.env.VERCEL) {
+        throw error;
+      }
+    }
+  } else if (process.env.VERCEL) {
+    throw new Error(
+      "MONGODB_URI is missing. Configure it in Vercel Environment Variables."
+    );
+  }
+
+  try {
+    db = JSON.parse(await fs.readFile(file, "utf8"));
+  } catch {
+    await save();
+  }
+
+  console.log("Using local JSON persistence");
+}
+{
  if(process.env.MONGODB_URI){try{await mongoose.connect(process.env.MONGODB_URI,{serverSelectionTimeoutMS:5000});mongo=true;console.log('MongoDB connected');return}catch(e){console.warn('MongoDB unavailable; using local JSON:',e.message)}}
  try{db=JSON.parse(await fs.readFile(file,'utf8'))}catch{await save()}
  console.log('Using local JSON persistence');
