@@ -1,81 +1,29 @@
-# 🚀 AI Software Company Simulator
+# AI Software Company
 
-### Experience how a real software company builds software using AI.
+A runnable full-stack AWT project: React + Vite frontend, Express backend, JWT authentication, MongoDB support, AI artifact generation, task management, bug tracking, and dashboard.
 
-> **An AI-powered platform that transforms a software idea into a structured, development-ready project through specialized AI roles.**
+## Requirements
+Node.js 18+ and npm. MongoDB and Gemini API are optional.
 
----
+## Run
+Terminal 1:
+```bash
+cd backend
+npm install
+cp .env.example .env
+npm run dev
+```
+On Windows PowerShell use `Copy-Item .env.example .env`.
 
-## 👥 Team
+Terminal 2:
+```bash
+cd frontend
+npm install
+cp .env.example .env
+npm run dev
+```
+Open http://localhost:5173.
 
-| Name | Role |
-|---|---|
-| **Ayushi Shah** | Project Lead & Full-Stack Integration |
-| **Manav Shukla** | Backend & API Development |
-| **Ziya Shukla** | databse & Documentation |
-| **Saniya Saiyed** | backend |
+Without `MONGODB_URI`, the backend persists data to `backend/data/db.json`. Without `GEMINI_API_KEY`, demo-mode AI generation works with clearly labelled templates. To enable live AI, add a Gemini API key to `backend/.env`. Never expose keys in frontend files or commit `.env`.
 
-**Department:** Computer Science & Engineering  
-**Project:** Advanced Web Technology (AWT)  
-**Academic Year:** 2026–27
-
----
-
-# 💡 About The Project
-
-Software development normally requires multiple professionals such as:
-
-- Business Analysts
-- Project Managers
-- Solution Architects
-- UI/UX Designers
-- Frontend Developers
-- Backend Developers
-- QA Engineers
-
-Our project simulates this complete software-company workflow using **specialized AI agents** inside one web platform.
-
-Instead of asking a general-purpose chatbot individual questions, the user provides a software idea and the platform guides that idea through a structured **Software Development Life Cycle (SDLC)**.
-
-### The concept
-
-```text
-                    USER
-                      │
-                      ▼
-             ┌─────────────────┐
-             │  PROJECT IDEA   │
-             └────────┬────────┘
-                      │
-                      ▼
-             🧠 BUSINESS ANALYST
-                      │
-                      ▼
-              REQUIREMENT ANALYSIS
-                      │
-                      ▼
-                 📄 SRS
-                      │
-                      ▼
-              📋 PROJECT MANAGER
-                      │
-                      ▼
-                SPRINT PLANNING
-                      │
-                      ▼
-             🏗 SOLUTION ARCHITECT
-                      │
-                      ▼
-             ARCHITECTURE / DATABASE
-                      │
-                      ▼
-              🎨 UI/UX DESIGNER
-                      │
-                      ▼
-              💻 DEVELOPMENT TEAM
-                      │
-                      ▼
-                 🧪 QA ENGINEER
-                      │
-                      ▼
-             📊 PROJECT DASHBOARD
+This is an academic MVP, not a production-certified autonomous app builder. AI outputs need human review; this initial build generates project artifacts but does not generate/deploy a complete application.
