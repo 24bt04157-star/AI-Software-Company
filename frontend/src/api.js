@@ -1,7 +1,7 @@
 
 const BASE = (
   import.meta.env.VITE_API_URL ||
-  'http://localhost:5000/api'
+  'https://ai-software-company-seven.vercel.app/api'
 ).replace(/\/+$/, '');
 
 export const token = () => localStorage.getItem('asc_token');
@@ -34,7 +34,9 @@ export async function api(path, options = {}) {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(data.error || `Request failed (${response.status})`);
+    throw new Error(
+      data.error || `Request failed (${response.status})`
+    );
   }
 
   return data;
