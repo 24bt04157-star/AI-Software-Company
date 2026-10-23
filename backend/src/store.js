@@ -1,16 +1,5 @@
 
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import mongoose from 'mongoose';
-import { nanoid } from 'nanoid';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const file = path.resolve(__dirname, '../data/db.json');
-
-let mongo = false;
 let db = {
   users: [],
   projects: [],
