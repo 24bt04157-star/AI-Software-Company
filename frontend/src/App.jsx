@@ -11,7 +11,25 @@ export default function App(){
  const tasks=project?.tasks||[],bugs=project?.bugs||[],arts=project?.artifacts||[];
  const metrics=useMemo(()=>({total:tasks.length,done:tasks.filter(t=>t.status==='done').length,open:bugs.filter(b=>b.status!=='resolved').length,progress:tasks.length?Math.round(tasks.filter(t=>t.status==='done').length/tasks.length*100):0}),[tasks,bugs]);
  const flash=s=>{T(s);setTimeout(()=>T(''),3200)};
- async function loadProjects(select){const d=await api('/projects');P(d.projects||[]);const id=select||pid||d.projects?.[0]?.id;if(id)await open(id);else{PID(null);PR(null)}}
+async function loadProjects(select) {
+  try {
+    const d = await api('/projects');
+    const list = d.projects || [];
+    P(list);
+
+    const id = select || pid || list[0]?.id;
+    if (id && list.some((p) => p.id === id)) {
+      await open(id);
+    } else {
+      PID(null);
+      PR(null);
+      V('overview');
+    }
+  } catch (err) {
+    E(err.message || 'Unable to load projects.');
+    throw err;
+  }
+}
  async function open(id){const d=await api(`/projects/${id}`);PID(id);PR(d.project);V('overview');MB(false)}
  useEffect(()=>{if(token())api('/auth/me').then(d=>{U(d.user);return loadProjects()}).catch(()=>saveToken(null))},[]);
  async function authSubmit(e){e.preventDefault();E('');B(true);try{const d=await api(`/auth/${mode==='register'?'register':'login'}`,{method:'POST',body:JSON.stringify(form)});saveToken(d.token);U(d.user);await loadProjects();flash('Welcome to your workspace.')}catch(e){E(e.message)}finally{B(false)}}
