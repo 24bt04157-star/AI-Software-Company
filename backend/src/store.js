@@ -1,15 +1,32 @@
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import mongoose from 'mongoose';
+import { nanoid } from 'nanoid';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const file = path.resolve(__dirname, '../data/db.json');
+
+let mongo = false;
 let db = {
   users: [],
   projects: [],
 };
 
+// -------------------- MONGOOSE MODELS --------------------
+
 const userSchema = new mongoose.Schema(
   {
     _id: { type: String, required: true },
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true, index: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
     passwordHash: { type: String, required: true },
   },
   {
@@ -34,10 +51,22 @@ const projectSchema = new mongoose.Schema(
         assumptions: [],
       }),
     },
-    conversation: { type: [mongoose.Schema.Types.Mixed], default: [] },
-    artifacts: { type: [mongoose.Schema.Types.Mixed], default: [] },
-    tasks: { type: [mongoose.Schema.Types.Mixed], default: [] },
-    bugs: { type: [mongoose.Schema.Types.Mixed], default: [] },
+    conversation: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: [],
+    },
+    artifacts: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: [],
+    },
+    tasks: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: [],
+    },
+    bugs: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: [],
+    },
   },
   {
     timestamps: true,
@@ -52,6 +81,8 @@ const User =
 const Project =
   mongoose.models.ASCProject ||
   mongoose.model('ASCProject', projectSchema);
+
+// -------------------- HELPERS --------------------
 
 function normalize(document) {
   if (!document) return null;
@@ -78,6 +109,8 @@ export function storageMode() {
   return mongo ? 'mongodb' : 'json';
 }
 
+// -------------------- INITIALIZATION --------------------
+
 export async function initStore() {
   if (process.env.MONGODB_URI) {
     try {
@@ -89,12 +122,8 @@ export async function initStore() {
       console.log('MongoDB connected');
       return;
     } catch (error) {
+      mongo = false;
       console.error('MongoDB connection failed:', error.message);
-
-      if (process.env.VERCEL) {
-        throw error;
-      }
-
       throw error;
     }
   }
@@ -106,11 +135,16 @@ export async function initStore() {
   }
 
   try {
-    db = JSON.parse(await fs.readFile(file, 'utf8'));
+    const contents = await fs.readFile(file, 'utf8');
+    db = JSON.parse(contents);
 
     if (!Array.isArray(db.users)) db.users = [];
     if (!Array.isArray(db.projects)) db.projects = [];
-  } catch {
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+
     db = { users: [], projects: [] };
     await save();
   }
@@ -132,19 +166,22 @@ export async function findUserByEmail(email) {
 
   return (
     db.users.find(
-      (user) => user.email.toLowerCase() === normalizedEmail
+      (user) =>
+        String(user.email).trim().toLowerCase() === normalizedEmail
     ) || null
   );
 }
 
 export async function findUserById(id) {
+  const normalizedId = String(id);
+
   if (mongo) {
-    return normalize(await User.findById(String(id)));
+    return normalize(await User.findById(normalizedId));
   }
 
   return (
     db.users.find(
-      (user) => String(user.id) === String(id)
+      (user) => String(user.id ?? user._id) === normalizedId
     ) || null
   );
 }
@@ -170,7 +207,8 @@ export async function createUser(user) {
 
   if (
     db.users.some(
-      (existing) => existing.email === newUser.email
+      (existing) =>
+        String(existing.email).trim().toLowerCase() === newUser.email
     )
   ) {
     throw new Error('Email already registered.');
@@ -211,9 +249,11 @@ export async function createProject(project) {
 }
 
 export async function listProjects(ownerId) {
+  const normalizedOwnerId = String(ownerId);
+
   if (mongo) {
     const projects = await Project.find({
-      ownerId: String(ownerId),
+      ownerId: normalizedOwnerId,
     }).sort({ updatedAt: -1 });
 
     return projects.map(normalize);
@@ -221,7 +261,7 @@ export async function listProjects(ownerId) {
 
   return db.projects
     .filter(
-      (project) => String(project.ownerId) === String(ownerId)
+      (project) => String(project.ownerId) === normalizedOwnerId
     )
     .sort(
       (a, b) =>
@@ -231,11 +271,14 @@ export async function listProjects(ownerId) {
 }
 
 export async function getProject(id, ownerId) {
+  const normalizedId = String(id);
+  const normalizedOwnerId = String(ownerId);
+
   if (mongo) {
     return normalize(
       await Project.findOne({
-        _id: String(id),
-        ownerId: String(ownerId),
+        _id: normalizedId,
+        ownerId: normalizedOwnerId,
       })
     );
   }
@@ -243,18 +286,21 @@ export async function getProject(id, ownerId) {
   return (
     db.projects.find(
       (project) =>
-        String(project.id) === String(id) &&
-        String(project.ownerId) === String(ownerId)
+        String(project.id ?? project._id) === normalizedId &&
+        String(project.ownerId) === normalizedOwnerId
     ) || null
   );
 }
 
 export async function updateProject(id, ownerId, updates) {
+  const normalizedId = String(id);
+  const normalizedOwnerId = String(ownerId);
+
   if (mongo) {
     const project = await Project.findOneAndUpdate(
       {
-        _id: String(id),
-        ownerId: String(ownerId),
+        _id: normalizedId,
+        ownerId: normalizedOwnerId,
       },
       {
         $set: {
@@ -273,8 +319,8 @@ export async function updateProject(id, ownerId, updates) {
 
   const project = db.projects.find(
     (item) =>
-      String(item.id) === String(id) &&
-      String(item.ownerId) === String(ownerId)
+      String(item.id ?? item._id) === normalizedId &&
+      String(item.ownerId) === normalizedOwnerId
   );
 
   if (!project) return null;
@@ -289,10 +335,13 @@ export async function updateProject(id, ownerId, updates) {
 }
 
 export async function deleteProject(id, ownerId) {
+  const normalizedId = String(id);
+  const normalizedOwnerId = String(ownerId);
+
   if (mongo) {
     const result = await Project.deleteOne({
-      _id: String(id),
-      ownerId: String(ownerId),
+      _id: normalizedId,
+      ownerId: normalizedOwnerId,
     });
 
     return result.deletedCount > 0;
@@ -300,8 +349,8 @@ export async function deleteProject(id, ownerId) {
 
   const index = db.projects.findIndex(
     (project) =>
-      String(project.id) === String(id) &&
-      String(project.ownerId) === String(ownerId)
+      String(project.id ?? project._id) === normalizedId &&
+      String(project.ownerId) === normalizedOwnerId
   );
 
   if (index === -1) return false;
@@ -325,17 +374,20 @@ export async function findProjectContainingArrayItem(
     throw new Error('Unsupported project array.');
   }
 
+  const normalizedOwnerId = String(ownerId);
+  const normalizedItemId = String(itemId);
+
   if (mongo) {
     const project = await Project.findOne({
-      ownerId: String(ownerId),
-      [`${arrayName}.id`]: String(itemId),
+      ownerId: normalizedOwnerId,
+      [`${arrayName}.id`]: normalizedItemId,
     });
 
     if (!project) return null;
 
     const normalizedProject = normalize(project);
     const item = (normalizedProject[arrayName] || []).find(
-      (entry) => String(entry.id) === String(itemId)
+      (entry) => String(entry.id) === normalizedItemId
     );
 
     return item
@@ -344,17 +396,17 @@ export async function findProjectContainingArrayItem(
   }
 
   const project = db.projects.find(
-    (item) =>
-      String(item.ownerId) === String(ownerId) &&
-      (item[arrayName] || []).some(
-        (entry) => String(entry.id) === String(itemId)
+    (entry) =>
+      String(entry.ownerId) === normalizedOwnerId &&
+      (entry[arrayName] || []).some(
+        (item) => String(item.id) === normalizedItemId
       )
   );
 
   if (!project) return null;
 
   const item = (project[arrayName] || []).find(
-    (entry) => String(entry.id) === String(itemId)
+    (entry) => String(entry.id) === normalizedItemId
   );
 
   return item ? { project, item } : null;
