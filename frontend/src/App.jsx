@@ -499,13 +499,20 @@ export default function App() {
           </button>
         ))}
         <div className="sidebar-bottom">
-          <div className="help">
-            <CircleIcon />
-            <div>
-              <b>Need a hand?</b>
-              <small>Start with the AI consultant.</small>
-            </div>
-          </div>
+  <button
+    type="button"
+    className="help"
+  onClick={() => {
+  V("chat");
+}}
+    title="Open AI Consultant"
+  >
+    <CircleIcon />
+    <div>
+      <b>Need a hand?</b>
+      <small>Start with the AI consultant.</small>
+    </div>
+  </button>
           <div className="profile">
             <span>
               {user.name
