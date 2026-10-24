@@ -1,0 +1,2 @@
+import jwt from 'jsonwebtoken';
+export function requireAuth(req,res,next){const h=req.headers.authorization||'';const t=h.startsWith('Bearer ')?h.slice(7):'';if(!t)return res.status(401).json({error:'Please sign in to continue.'});try{req.userId=jwt.verify(t,process.env.JWT_SECRET||'local-demo-secret-change-me').sub;next()}catch{return res.status(401).json({error:'Session expired. Please sign in again.'})}}
