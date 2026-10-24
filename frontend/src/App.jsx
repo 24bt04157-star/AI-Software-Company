@@ -680,11 +680,83 @@ export default function App() {
                     {!tasks.length && (
                       <Empty>No tasks yet. Add one in Tasks.</Empty>
                     )}
-                    <button className="linkbtn" onClick={() => V("tasks")}>
-                      Manage tasks <ArrowRight size={14} />
-                    </button>
-                  </div>
-                  <div className="panel">
+                    
+<button className="linkbtn" onClick={() => V("tasks")}>
+  Manage tasks <ArrowRight size={14} />
+</button>
+</div>
+
+<div className="panel quick-actions-panel">
+  <PanelTitle
+    title="Quick actions"
+    subtitle="Move your project forward in one click."
+  />
+
+  <div className="quick-actions-grid">
+    <button
+      type="button"
+      className="quick-action quick-action-task"
+      onClick={() => V("tasks")}
+    >
+      <span className="quick-action-icon">
+        <ClipboardList size={20} />
+      </span>
+      <span className="quick-action-copy">
+        <b>Create task</b>
+        <small>Plan your next step</small>
+      </span>
+      <ArrowRight size={17} className="quick-action-arrow" />
+    </button>
+
+    <button
+      type="button"
+      className="quick-action quick-action-bug"
+      onClick={() => V("bugs")}
+    >
+      <span className="quick-action-icon">
+        <Bug size={20} />
+      </span>
+      <span className="quick-action-copy">
+        <b>Report a bug</b>
+        <small>Track an issue</small>
+      </span>
+      <ArrowRight size={17} className="quick-action-arrow" />
+    </button>
+
+    <button
+      type="button"
+      className="quick-action quick-action-document"
+      onClick={() => V("documents")}
+    >
+      <span className="quick-action-icon">
+        <FileText size={20} />
+      </span>
+      <span className="quick-action-copy">
+        <b>Generate document</b>
+        <small>Create a project artifact</small>
+      </span>
+      <ArrowRight size={17} className="quick-action-arrow" />
+    </button>
+
+    <button
+      type="button"
+      className="quick-action quick-action-ai"
+      onClick={() => V("chat")}
+    >
+      <span className="quick-action-icon">
+        <MessageSquare size={20} />
+      </span>
+      <span className="quick-action-copy">
+        <b>Ask AI</b>
+        <small>Get help with your project</small>
+      </span>
+      <ArrowRight size={17} className="quick-action-arrow" />
+    </button>
+  </div>
+</div>
+
+<div className="panel">
+
                     <PanelTitle
                       title="AI team"
                       subtitle="Specialized roles for your project."

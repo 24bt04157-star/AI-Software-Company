@@ -1321,3 +1321,394 @@ button:disabled {
     font-size: 23px;
   }
 }
+
+/* Dashboard metric card hover effects */
+.metrics > * {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+  will-change: transform;
+}
+
+.metrics > *:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 28px rgba(48, 75, 150, 0.12);
+  border-color: #b8c8ff;
+}
+
+/* Smooth icon animation inside metric cards */
+.metrics > * svg {
+  transition: transform 0.25s ease;
+}
+
+.metrics > *:hover svg {
+  transform: scale(1.08);
+}
+
+/* Accessibility: respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .metrics > *,
+  .metrics > * svg {
+    transition: none;
+  }
+
+  .metrics > *:hover,
+  .metrics > *:hover svg {
+    transform: none;
+  }
+}
+
+/* ===== Premium dashboard styling ===== */
+
+/* Soft, modern workspace background */
+main.main {
+  background:
+    radial-gradient(ellipse at 85% 0%, rgba(111, 130, 255, 0.07), transparent 38%),
+    #f4f7fd;
+}
+
+/* Dashboard metric cards */
+.metrics > * {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e1e8f5;
+  border-radius: 17px;
+  background: linear-gradient(145deg, #ffffff, #fbfcff);
+  box-shadow: 0 3px 10px rgba(30, 55, 100, 0.025);
+  transition:
+    transform 280ms ease,
+    box-shadow 280ms ease,
+    border-color 280ms ease,
+    background 280ms ease;
+}
+
+/* Subtle accent line at the top */
+.metrics > *::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 14px;
+  right: 14px;
+  height: 3px;
+  border-radius: 0 0 5px 5px;
+  background: linear-gradient(90deg, #6278ff, #51c2d2);
+  opacity: 0;
+  transform: scaleX(0.45);
+  transition: opacity 280ms ease, transform 280ms ease;
+}
+
+.metrics > *:hover {
+  transform: translateY(-6px);
+  border-color: #c8d4ff;
+  background: #ffffff;
+  box-shadow: 0 16px 35px rgba(65, 86, 160, 0.11);
+}
+
+.metrics > *:hover::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* Icon tiles */
+.metrics > * svg {
+  transition: transform 280ms ease;
+}
+
+.metrics > *:hover svg {
+  transform: scale(1.1) rotate(-3deg);
+}
+
+/* Main dashboard panels */
+.panel {
+  border: 1px solid #e2e9f5;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 5px 18px rgba(35, 55, 100, 0.025);
+  transition: border-color 250ms ease, box-shadow 250ms ease;
+}
+
+.panel:hover {
+  border-color: #d3def5;
+  box-shadow: 0 9px 25px rgba(35, 55, 100, 0.055);
+}
+
+/* Progress bar */
+.bar {
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e7edfa;
+}
+
+.bar span {
+  border-radius: inherit;
+  background: linear-gradient(90deg, #586cf6, #43bfd0);
+  transition: width 600ms ease;
+}
+
+/* Buttons */
+button {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button.primary:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 7px 18px rgba(75, 99, 230, 0.23);
+}
+
+/* Accessible motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .metrics > *,
+  .metrics > *::before,
+  .metrics > * svg,
+  .panel,
+  .bar span,
+  button {
+    transition: none !important;
+  }
+
+  .metrics > *:hover,
+  .metrics > *:hover svg,
+  button:active {
+    transform: none;
+  }
+}
+
+/* Quick Actions */
+.quick-actions-panel {
+  margin-top: 22px;
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.quick-action {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  min-width: 0;
+  padding: 17px;
+  border: 1px solid #e2e8f5;
+  border-radius: 15px;
+  background: #ffffff;
+  color: #17243b;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease,
+    background 220ms ease;
+}
+
+.quick-action:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(45, 67, 120, 0.10);
+}
+
+.quick-action:focus-visible {
+  outline: 3px solid rgba(76, 105, 232, 0.35);
+  outline-offset: 3px;
+}
+
+.quick-action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  transition: transform 220ms ease;
+}
+
+.quick-action:hover .quick-action-icon {
+  transform: scale(1.08);
+}
+
+.quick-action-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.quick-action-copy b {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.quick-action-copy small {
+  color: #8491a8;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.quick-action-arrow {
+  flex-shrink: 0;
+  color: #96a2b8;
+  transition: transform 220ms ease, color 220ms ease;
+}
+
+.quick-action:hover .quick-action-arrow {
+  transform: translateX(4px);
+  color: #4b67e8;
+}
+
+.quick-action-task:hover {
+  border-color: #aabaff;
+  background: #f9faff;
+}
+
+.quick-action-task .quick-action-icon {
+  color: #4c6be8;
+  background: #edf1ff;
+}
+
+.quick-action-bug:hover {
+  border-color: #ffc99f;
+  background: #fffaf6;
+}
+
+.quick-action-bug .quick-action-icon {
+  color: #d97732;
+  background: #fff0e4;
+}
+
+.quick-action-document:hover {
+  border-color: #9de5c9;
+  background: #f6fdf9;
+}
+
+.quick-action-document .quick-action-icon {
+  color: #15966a;
+  background: #e6f8f0;
+}
+
+.quick-action-ai:hover {
+  border-color: #d8b9ff;
+  background: #fcf9ff;
+}
+
+.quick-action-ai .quick-action-icon {
+  color: #9254d5;
+  background: #f4eafe;
+}
+
+@media (max-width: 700px) {
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quick-action,
+  .quick-action-icon,
+  .quick-action-arrow {
+    transition: none;
+  }
+
+  .quick-action:hover {
+    transform: none;
+  }
+}
+
+/* ===== Overview Section Hover Effects ===== */
+
+/* Project Progress and AI Team panels */
+.content .panel {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+.content .panel:hover {
+  border-color: #c5d2ff;
+  box-shadow: 0 10px 28px rgba(57, 79, 145, 0.08);
+}
+
+/* Recent task rows */
+.content .task-row {
+  transition:
+    background 200ms ease,
+    padding 200ms ease,
+    border-radius 200ms ease;
+}
+
+.content .task-row:hover {
+  background: #f5f7ff;
+  border-radius: 10px;
+}
+
+/* AI Team members */
+.content .agent {
+  transition:
+    background 200ms ease,
+    transform 200ms ease;
+}
+
+.content .agent:hover {
+  background: #f7f8ff;
+  transform: translateX(3px);
+}
+
+/* Generate Project Artifacts cards */
+.content .artifact-shortcuts .shortcut {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease,
+    background 220ms ease;
+}
+
+.content .artifact-shortcuts .shortcut:hover {
+  transform: translateY(-3px);
+  border-color: #b9c8ff;
+  background: #fbfcff;
+  box-shadow: 0 8px 20px rgba(57, 79, 145, 0.09);
+}
+
+/* Animate artifact icons and arrows */
+.content .artifact-shortcuts .shortcut svg {
+  transition: transform 220ms ease, color 220ms ease;
+}
+
+.content .artifact-shortcuts .shortcut:hover svg {
+  color: #4c6be8;
+}
+
+/* Keyboard accessibility */
+.content .panel button:focus-visible {
+  outline: 2px solid #617cf0;
+  outline-offset: 3px;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .content .panel,
+  .content .task-row,
+  .content .agent,
+  .content .artifact-shortcuts .shortcut,
+  .content .artifact-shortcuts .shortcut svg {
+    transition: none !important;
+  }
+
+  .content .agent:hover,
+  .content .artifact-shortcuts .shortcut:hover {
+    transform: none;
+  }
+}
