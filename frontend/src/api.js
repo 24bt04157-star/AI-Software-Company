@@ -1,42 +1,4 @@
-const BASE = (
-  import.meta.env.VITE_API_URL ||
-  'https://ai-software-company-seven.vercel.app/api'
-).replace(/\/+$/, '');
-
-export const token = () => localStorage.getItem('asc_token');
-
-export const saveToken = (value) => {
-  if (value) {
-    localStorage.setItem('asc_token', value);
-  } else {
-    localStorage.removeItem('asc_token');
-  }
-};
-
-export async function api(path, options = {}) {
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(options.headers || {}),
-  };
-
-  const currentToken = token();
-
-  if (currentToken) {
-    headers.Authorization = `Bearer ${currentToken}`;
-  }
-
-  const response = await fetch(`${BASE}${path}`, {
-    ...options,
-    headers,
-  });
-
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(
-      data.error || `Request failed (${response.status})`
-    );
-  }
-
-  return data;
-}
+const BASE=(import.meta.env.VITE_API_URL||'http://localhost:5000/api').replace(/\/+$/,'');
+export const token=()=>localStorage.getItem('asc_token');export const saveToken=v=>v?localStorage.setItem('asc_token',v):localStorage.removeItem('asc_token');
+export async function api(path,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(token())headers.Authorization=`Bearer ${token()}`;let r;try{r=await fetch(`${BASE}${path}`,{...options,headers})}catch{throw new Error(`Cannot reach ${BASE}. Make sure the backend is running and VITE_API_URL is correct.`)}const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||`Request failed (${r.status})`);return d}
+export const post=data=>({method:'POST',body:JSON.stringify(data)});export const patch=data=>({method:'PATCH',body:JSON.stringify(data)});
