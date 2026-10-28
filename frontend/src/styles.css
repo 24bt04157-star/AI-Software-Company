@@ -1442,3 +1442,94 @@ button.workspace:focus-visible {
   outline: 2px solid #8498ed;
   outline-offset: 3px;
 }
+
+/* Enhanced task board and bug tracker */
+.work-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:0 0 16px; }
+.work-stat { min-width:0; background:#fff; border:1px solid #e4eaf3; border-radius:13px; padding:15px 16px; display:grid; grid-template-columns:36px 1fr; column-gap:10px; align-items:center; box-shadow:0 3px 12px #253a5b05; }
+.work-stat-icon { width:36px; height:36px; display:grid; place-items:center; border-radius:10px; grid-row:span 3; }
+.work-stat-icon.blue { color:#526df5; background:#edf1ff; } .work-stat-icon.amber { color:#c58a32; background:#fff4df; } .work-stat-icon.violet { color:#9160d8; background:#f3eaff; } .work-stat-icon.green { color:#199b79; background:#e2f8ef; } .work-stat-icon.red { color:#d35454; background:#fff0ef; }
+.work-stat small { color:#8793a6; font-size:10px; } .work-stat strong { color:#192a43; font-size:24px; line-height:1.2; margin:2px 0; } .work-stat > span:last-child { color:#9aa5b5; font-size:9px; }
+.work-create-panel,.bug-create-panel { margin-bottom:15px; }
+.work-panel-heading,.bug-list-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+.work-panel-heading h3,.bug-list-heading h3 { margin:4px 0 3px; color:#26364d; font-size:15px; }
+.work-panel-heading p,.bug-list-heading p { margin:0; color:#8793a6; font-size:10px; line-height:1.5; }
+.eyebrow { color:#5a74ed; font-size:9px; font-weight:800; letter-spacing:1.4px; }
+.work-heading-icon { width:40px; height:40px; display:grid; place-items:center; border-radius:12px; color:#526df5; background:#edf1ff; flex-shrink:0; }
+.work-heading-icon.bug-icon { color:#cf6c37; background:#fff0e3; }
+.enhanced-task-form { grid-template-columns:minmax(0,1fr) 170px; }
+.enhanced-task-form .primary { grid-column:1/-1; }
+.enhanced-kanban { gap:14px; }
+.enhanced-kanban .kanban-column { padding:13px; min-height:260px; border-radius:14px; }
+.column-todo { background:#f0f4fb; } .column-in-progress { background:#f4f0ff; } .column-done { background:#edf8f3; }
+.column-title-label { display:flex; align-items:center; gap:8px; }
+.column-hint { font-size:9px; color:#9aa5b5; padding:0 2px 12px; margin-top:-5px; }
+.status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#98a5b8; flex-shrink:0; }
+.status-dot.todo,.status-dot.open { background:#e3a13a; } .status-dot.in-progress { background:#8d6be8; } .status-dot.done,.status-dot.resolved { background:#2aa783; }
+.enhanced-task-card { padding:13px; border-radius:12px; border-color:#e5eaf2; transition:transform .16s ease,box-shadow .16s ease; }
+.enhanced-task-card:hover,.enhanced-bug-row:hover { box-shadow:0 7px 20px #263c5d0b; }
+.task-card-title { font-size:11px!important; color:#29384e; }
+.task-card-meta { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:12px; padding-top:10px; border-top:1px solid #f0f2f7; color:#9aa4b4; font-size:8px; }
+.task-card-meta span:first-child { display:flex; align-items:center; gap:4px; }
+.task-id,.bug-id { font-size:8px; color:#9ba5b4; font-weight:700; letter-spacing:.3px; }
+.column-empty { display:flex; flex-direction:column; align-items:center; gap:6px; padding:28px 10px; }
+.empty-column-icon { color:#a6b3c8; margin-bottom:3px; } .column-empty b { color:#63718a; font-size:10px; } .column-empty span:last-child { font-size:9px; line-height:1.5; max-width:180px; }
+.work-toolbar { display:flex; align-items:center; gap:9px; margin:14px 0; flex-wrap:wrap; }
+.work-search { display:flex; align-items:center; gap:8px; flex:1 1 260px; min-width:0; padding:0 11px; border:1px solid #e0e7f0; background:#fff; border-radius:9px; color:#8b98ac; }
+.work-search input { width:100%; min-width:0; border:0; outline:0; padding:10px 0; color:#35445a; font-size:10px; background:transparent; }
+.work-filter { display:flex; align-items:center; gap:6px; padding:0 9px; border:1px solid #e0e7f0; border-radius:9px; background:#fff; color:#8592a5; }
+.work-filter select { max-width:160px; border:0; outline:0; background:transparent; padding:10px 0; color:#5a687d; font-size:10px; }
+.results-count { color:#929daf; font-size:9px; white-space:nowrap; }
+.work-insight,.bug-alert { display:flex; align-items:center; gap:10px; padding:12px 14px; border:1px solid #f4dfb6; background:#fff9eb; color:#a56b1f; border-radius:11px; margin-top:14px; font-size:10px; }
+.work-insight span { line-height:1.5; } .bug-alert { margin:0 0 15px; border-color:#f2d1ce; background:#fff5f4; color:#bf514b; align-items:flex-start; } .bug-alert div { display:flex; flex-direction:column; gap:3px; } .bug-alert span { font-size:9px; color:#a97774; }
+.bug-expectation-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.enhanced-bug-form .primary { min-height:40px; }
+.bug-list-panel { padding:18px; }
+.bug-list-heading { margin-bottom:12px; }
+.issue-total { padding:6px 9px; border-radius:8px; background:#f1f4fa; color:#66758c; font-size:9px; font-weight:700; white-space:nowrap; }
+.bug-list-summary { display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:10px 0; border-bottom:1px solid #edf0f5; color:#7f8ca1; font-size:9px; }
+.bug-list-summary > span:not(.results-count) { display:flex; align-items:center; gap:6px; }
+.bug-list-summary .results-count { margin-left:auto; }
+.enhanced-bug-row { padding:16px 0; gap:18px; }
+.bug-main { min-width:0; flex:1; }
+.bug-badges { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
+.enhanced-bug-row .bug-main > b { font-size:12px; color:#2d3b50; margin:9px 0 5px; }
+.enhanced-bug-row .bug-main > p { font-size:10px; white-space:pre-wrap; overflow-wrap:anywhere; margin:6px 0 8px; }
+.bug-status-pill { padding:4px 7px; border-radius:5px; text-transform:capitalize; font-size:8px; font-weight:700; background:#fff4df; color:#ad7a2c; }
+.bug-status-pill.in-progress { background:#f1eaff; color:#8056c4; } .bug-status-pill.resolved { background:#e5f7ef; color:#208567; }
+.bug-status-control { display:flex; flex-direction:column; gap:4px; color:#8c98a9; font-size:8px; }
+.bug-actions { flex-shrink:0; }
+.bug-actions select { min-width:110px; }
+@media (max-width: 900px) { .work-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .enhanced-kanban { grid-template-columns:1fr; } .enhanced-kanban .kanban-column { min-height:150px; } }
+@media (max-width: 560px) { .work-stats { gap:8px; } .work-stat { padding:11px; grid-template-columns:30px 1fr; column-gap:8px; } .work-stat-icon { width:30px; height:30px; } .work-stat strong { font-size:20px; } .enhanced-task-form { grid-template-columns:1fr; } .enhanced-task-form .primary { grid-column:auto; width:100%; } .bug-expectation-grid { grid-template-columns:1fr; } .work-filter { flex:1 1 auto; } .work-filter select { max-width:none; width:100%; } .work-toolbar .results-count { width:100%; } .enhanced-bug-row { flex-direction:column; } .bug-actions { width:100%; justify-content:space-between; } .bug-status-control { flex:1; } .bug-actions select { width:100%; } .bug-list-summary .results-count { margin-left:0; } }
+
+/* Peak workflow polish: drag-and-drop, ownership, deadlines and richer bug triage */
+.enhanced-task-card[draggable="true"] { cursor: grab; }
+.enhanced-task-card[draggable="true"]:active { cursor: grabbing; }
+.enhanced-kanban .kanban-column.drop-ready { outline:1px dashed #aab8ff; outline-offset:-5px; transition:outline-color .15s,background .15s; }
+.enhanced-kanban .kanban-column.drop-ready:hover { outline:2px dashed #647df7; background:#e9eeff; }
+.drag-hint { color:#a1aabd; font-size:8px; display:inline-flex; align-items:center; gap:3px; margin-left:auto; }
+.task-extra-meta { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:7px; margin-top:11px; }
+.assignee-chip,.due-chip { display:inline-flex; align-items:center; gap:6px; max-width:100%; color:#718097; font-size:9px; background:#f5f7fb; border:1px solid #e9edf4; padding:5px 7px; border-radius:7px; overflow-wrap:anywhere; }
+.assignee-avatar { display:inline-grid; place-items:center; width:19px; height:19px; border-radius:50%; background:#e5eaff; color:#526df5; font-size:8px; font-weight:800; flex-shrink:0; }
+.due-chip { background:#f3f6ff; color:#5267cb; }
+.due-chip.overdue { background:#fff0ef; color:#c34e4a; border-color:#f4d5d2; font-weight:700; }
+.task-overdue { border-color:#f1c9c6!important; box-shadow:inset 3px 0 #df6962; }
+.enhanced-task-form { grid-template-columns:minmax(0,1fr) 150px minmax(140px,.7fr) minmax(140px,.7fr); }
+.enhanced-task-form .fullrow { grid-column:1/-1; }
+.enhanced-task-form .primary { grid-column:1/-1; }
+.enhanced-bug-form { gap:12px; }
+.enhanced-bug-form label select,.enhanced-bug-form label input { width:100%; }
+.bug-expectation-grid select { width:100%; }
+@media (max-width:900px) { .enhanced-task-form { grid-template-columns:1fr 1fr; } }
+@media (max-width:560px) { .enhanced-task-form { grid-template-columns:1fr; } .enhanced-task-form .fullrow,.enhanced-task-form .primary { grid-column:auto; } .task-extra-meta { align-items:flex-start; flex-direction:column; } }
+
+/* Reporting polish: accessible exports and readable structured bug details */
+.export-button { display:inline-flex; align-items:center; justify-content:center; gap:7px; white-space:nowrap; }
+.bug-list-tools { display:flex; align-items:center; gap:10px; }
+.bug-meta-chips { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+.bug-meta-chips span { display:inline-flex; align-items:center; border:1px solid #e4eaf4; background:#f7f9fd; color:#68768d; border-radius:6px; padding:4px 7px; font-size:9px; }
+.bug-detail { margin:9px 0; border:1px solid #e7ecf5; background:#fafbfe; border-radius:8px; padding:9px 11px; color:#6f7d92; font-size:10px; }
+.bug-detail summary { cursor:pointer; font-weight:700; color:#52627b; }
+.bug-detail p { white-space:pre-wrap; overflow-wrap:anywhere; margin:9px 0 0; }
+.bug-detail p b { color:#35445c; }
+@media (max-width:560px) { .bug-list-tools { align-items:flex-start; flex-direction:column; } .export-button { width:100%; } }

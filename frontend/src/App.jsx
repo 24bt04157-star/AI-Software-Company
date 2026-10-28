@@ -20,7 +20,13 @@ import {
   Trash2,
   X,
   Code2,
-  Clock3
+  Clock3,
+  CalendarDays,
+  CheckCircle2,
+  CircleDot,
+  AlertTriangle,
+  Filter,
+  ListTodo
 } from 'lucide-react';
 import { api, post, patch, token, saveToken } from './api';
 
@@ -109,17 +115,14 @@ function App() {
     platform: 'Web application'
   });
 
-  const [task, setTask] = useState({
-    title: '',
-    description: '',
-    priority: 'medium'
-  });
-
-  const [bug, setBug] = useState({
-    title: '',
-    description: '',
-    severity: 'medium'
-  });
+  const [task, setTask] = useState({ title: '', description: '', priority: 'medium', assignee: '', dueDate: '' });
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [taskSearch, setTaskSearch] = useState('');
+  const [taskPriorityFilter, setTaskPriorityFilter] = useState('all');
+  const [bug, setBug] = useState({ title: '', description: '', severity: 'medium', steps: '', expected: '', actual: '', category: 'functional', environment: '' });
+  const [bugSearch, setBugSearch] = useState('');
+  const [bugStatusFilter, setBugStatusFilter] = useState('all');
+  const [bugSeverityFilter, setBugSeverityFilter] = useState('all');
 
   const [chat, setChat] = useState('');
   const [role, setRole] = useState(ROLES[0]);
@@ -277,11 +280,7 @@ function App() {
     try {
       await api(`/projects/${project.id}/tasks`, post(task));
 
-      setTask({
-        title: '',
-        description: '',
-        priority: 'medium'
-      });
+      setTask({ title: '', description: '', priority: 'medium', assignee: '', dueDate: '' });
 
       await refresh();
       notify('Task added');
@@ -315,13 +314,9 @@ function App() {
     if (!project) return;
 
     try {
-      await api(`/projects/${project.id}/bugs`, post(bug));
+      await api(`/projects/${project.id}/bugs`, post({ title: bug.title, description: bug.description, steps: bug.steps, expected: bug.expected, actual: bug.actual, category: bug.category, environment: bug.environment, severity: bug.severity }));
 
-      setBug({
-        title: '',
-        description: '',
-        severity: 'medium'
-      });
+      setBug({ title: '', description: '', severity: 'medium', steps: '', expected: '', actual: '', category: 'functional', environment: '' });
 
       await refresh();
       notify('Bug reported');
@@ -888,234 +883,125 @@ const workspacePage = () => (
     </>
   );
 
+  const exportRowsCsv = (filename, rows) => {
+    const csv = rows.map(row => row.map(value => `"${String(value ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url; link.download = filename; link.click();
+    URL.revokeObjectURL(url);
+    notify('CSV export downloaded');
+  };
+
   const tasksPage = () =>
-    !project ? (
-      needProject
-    ) : (
-      <>
-        {heading(
-          'Task board',
-          `Plan work for ${project.title}. Move tasks between workflow stages.`
-        )}
-
-        <section className="panel">
-          <form className="task-form" onSubmit={addTask}>
-            <label>
-              Task title
-              <input
-                required
-                maxLength="180"
-                value={task.title}
-                onChange={e =>
-                  setTask({ ...task, title: e.target.value })
-                }
-                placeholder="e.g. Design sign-up flow"
-              />
-            </label>
-
-            <label>
-              Priority
-              <select
-                value={task.priority}
-                onChange={e =>
-                  setTask({ ...task, priority: e.target.value })
-                }
-              >
-                {['low', 'medium', 'high', 'critical'].map(x => (
-                  <option key={x}>{x}</option>
-                ))}
-              </select>
-            </label>
-
-            <label className="fullrow">
-              Description
-              <textarea
-                rows="2"
-                value={task.description}
-                onChange={e =>
-                  setTask({ ...task, description: e.target.value })
-                }
-                placeholder="Optional details and acceptance criteria"
-              />
-            </label>
-
-            <button className="primary">
-              <Plus size={15} /> Add task
-            </button>
+    !project ? needProject : (() => {
+      const allTasks = project.tasks || [];
+      const visibleTasks = allTasks.filter(t =>
+        `${t.title} ${t.description || ''}`.toLowerCase().includes(taskSearch.toLowerCase()) &&
+        (taskPriorityFilter === 'all' || t.priority === taskPriorityFilter)
+      );
+      const counts = {
+        total: allTasks.length,
+        todo: allTasks.filter(t => t.status === 'todo').length,
+        doing: allTasks.filter(t => t.status === 'in-progress').length,
+        done: allTasks.filter(t => t.status === 'done').length,
+        urgent: allTasks.filter(t => ['high', 'critical'].includes(t.priority) && t.status !== 'done').length
+      };
+      return <>
+        {heading('Task board', `Turn ${project.title} into clear, trackable work.`)}
+        <div className="work-stats">
+          <div className="work-stat"><span className="work-stat-icon blue"><ListTodo size={17}/></span><small>Total tasks</small><strong>{counts.total}</strong><span>Across this project</span></div>
+          <div className="work-stat"><span className="work-stat-icon amber"><CircleDot size={17}/></span><small>To do</small><strong>{counts.todo}</strong><span>Ready to start</span></div>
+          <div className="work-stat"><span className="work-stat-icon violet"><Activity size={17}/></span><small>In progress</small><strong>{counts.doing}</strong><span>Currently active</span></div>
+          <div className="work-stat"><span className="work-stat-icon green"><CheckCircle2 size={17}/></span><small>Completed</small><strong>{counts.done}</strong><span>{counts.total ? Math.round(counts.done / counts.total * 100) : 0}% completion</span></div>
+        </div>
+        <section className="panel work-create-panel">
+          <div className="work-panel-heading"><div><span className="eyebrow">PLAN THE WORK</span><h3>Create a task</h3><p>Keep work small, specific and easy to verify.</p></div><span className="work-heading-icon"><Plus size={19}/></span></div>
+          <form className="task-form enhanced-task-form" onSubmit={addTask}>
+            <label>Task title<input required maxLength="180" value={task.title} onChange={e => setTask({...task, title:e.target.value})} placeholder="e.g. Build appointment booking form" /></label>
+            <label>Priority<select value={task.priority} onChange={e => setTask({...task, priority:e.target.value})}>{['low','medium','high','critical'].map(x=><option key={x} value={x}>{x[0].toUpperCase()+x.slice(1)}</option>)}</select></label>
+            <label>Assignee<input maxLength="80" value={task.assignee} onChange={e=>setTask({...task,assignee:e.target.value})} placeholder="e.g. Ayushi or Unassigned" /></label>
+            <label>Due date<input type="date" value={task.dueDate} onChange={e=>setTask({...task,dueDate:e.target.value})} /></label>
+            <label className="fullrow">Description & acceptance criteria<textarea rows="3" value={task.description} onChange={e=>setTask({...task, description:e.target.value})} placeholder="What needs to be done? How will the team know it is complete?" /></label>
+            <button className="primary"><Plus size={15}/> Create task</button>
           </form>
         </section>
-
-        <div className="kanban">
-          {Object.entries(STATUSES).map(([s, label]) => (
-            <section className="kanban-column" key={s}>
-              <div className="kanban-title">
-                <b>{label}</b>
-                <span>
-                  {project.tasks.filter(t => t.status === s).length}
-                </span>
-              </div>
-
-              {project.tasks
-                .filter(t => t.status === s)
-                .map(t => (
-                  <article className="task-card" key={t.id}>
-                    <div className="task-top">
-                      <span className={`priority ${t.priority}`}>
-                        {t.priority}
-                      </span>
-
-                      <button
-                        className="icon-button danger"
-                        title="Delete task"
-                        onClick={() => deleteTask(t.id)}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-
-                    <b>{t.title}</b>
-                    {t.description && <p>{t.description}</p>}
-
-                    <label className="small-label">
-                      Workflow status
-                      <select
-                        value={t.status}
-                        onChange={e =>
-                          updateTask(t.id, { status: e.target.value })
-                        }
-                      >
-                        {Object.entries(STATUSES).map(([v, l]) => (
-                          <option key={v} value={v}>
-                            {l}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <small>Created {date(t.createdAt)}</small>
-                  </article>
-                ))}
-
-              {!project.tasks.some(t => t.status === s) && (
-                <div className="column-empty">No tasks here yet</div>
-              )}
-            </section>
-          ))}
+        <div className="work-toolbar">
+          <label className="work-search"><Search size={16}/><input value={taskSearch} onChange={e=>setTaskSearch(e.target.value)} placeholder="Search tasks by title or description…" /></label>
+          <label className="work-filter"><Filter size={15}/><select value={taskPriorityFilter} onChange={e=>setTaskPriorityFilter(e.target.value)}><option value="all">All priorities</option>{['critical','high','medium','low'].map(x=><option key={x} value={x}>{x[0].toUpperCase()+x.slice(1)} priority</option>)}</select></label>
+          <button type="button" className="secondary export-button" onClick={() => exportRowsCsv(`${project.title.replace(/[^a-z0-9]+/gi,'-').toLowerCase()}-tasks.csv`, [['Task','Description','Status','Priority','Assignee','Due date','Created'], ...visibleTasks.map(t => [t.title,t.description,STATUSES[t.status || 'todo'],t.priority,t.assignee,t.dueDate,t.createdAt])])}><FileText size={14}/> Export CSV</button><span className="results-count">{visibleTasks.length} of {allTasks.length} tasks</span>
         </div>
-      </>
-    );
+        <div className="kanban enhanced-kanban">
+          {Object.entries(STATUSES).map(([status, label]) => {
+            const items = visibleTasks.filter(t => (t.status || 'todo') === status);
+            return <section className={`kanban-column column-${status} ${draggedTaskId ? 'drop-ready' : ''}`} key={status} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();if(draggedTaskId){updateTask(draggedTaskId,{status});setDraggedTaskId(null);notify(`Task moved to ${label}`)}}}>
+              <div className="kanban-title"><div className="column-title-label"><span className={`status-dot ${status}`}></span><b>{label}</b></div><span>{items.length}</span></div>
+              <div className="column-hint">{status==='todo'?'Queued up':status==='in-progress'?'Work happening now':'Shipped and completed'}</div>
+              {items.map(t => <article className={`task-card enhanced-task-card ${t.dueDate && t.status !== 'done' && t.dueDate < new Date().toISOString().slice(0,10) ? 'task-overdue' : ''}`} key={t.id} draggable onDragStart={()=>setDraggedTaskId(t.id)} onDragEnd={()=>setDraggedTaskId(null)}>
+                <div className="task-top"><span className={`priority ${t.priority}`}>{t.priority==='critical'?'⚡ Critical':t.priority}</span><span className="drag-hint" title="Drag to move between columns">⠿ Drag</span><button className="icon-button danger" title="Delete task" aria-label={`Delete ${t.title}`} onClick={()=>deleteTask(t.id)}><Trash2 size={14}/></button></div>
+                <b className="task-card-title">{t.title}</b>
+                {t.description && <p>{t.description}</p>}
+                {(t.assignee || t.dueDate) && <div className="task-extra-meta">{t.assignee && <span className="assignee-chip"><span className="assignee-avatar">{t.assignee.trim().split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}</span>{t.assignee}</span>}{t.dueDate && <span className={t.status!=='done' && t.dueDate < new Date().toISOString().slice(0,10) ? 'due-chip overdue' : 'due-chip'}><CalendarDays size={12}/>{t.status==='done'?'Due':'Due'} {date(t.dueDate)}</span>}</div>}
+                <div className="task-card-meta"><span><CalendarDays size={12}/> Added {date(t.createdAt)}</span><span className="task-id">TASK-{String(t.id || '').slice(-5).toUpperCase()}</span></div>
+                <label className="small-label">Move task to<select value={t.status || 'todo'} onChange={e=>updateTask(t.id,{status:e.target.value})}>{Object.entries(STATUSES).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
+              </article>)}
+              {!items.length && <div className="column-empty"><span className="empty-column-icon">{status==='done'?<CheckCircle2 size={21}/>:status==='in-progress'?<Activity size={21}/>:<ListTodo size={21}/>}</span><b>{taskSearch || taskPriorityFilter!=='all'?'No matching tasks':'Nothing here yet'}</b><span>{taskSearch || taskPriorityFilter!=='all'?'Try changing your search or filter.':status==='todo'?'Create a task above to get started.':`Tasks moved to ${label.toLowerCase()} will appear here.`}</span></div>}
+            </section>;
+          })}
+        </div>
+        {counts.urgent > 0 && <div className="work-insight"><AlertTriangle size={16}/><span><b>{counts.urgent} high-priority task{counts.urgent===1?'':'s'} still open.</b> Consider tackling these before lower-priority work.</span></div>}
+      </>;
+    })();
 
   const bugsPage = () =>
-    !project ? (
-      needProject
-    ) : (
-      <>
-        {heading(
-          'Bug tracker',
-          'Record defects, prioritize fixes, and track status.'
-        )}
-
-        <section className="panel">
-          {panelTitle('Report a bug', 'Describe the unexpected behavior')}
-
-          <form className="stack-form" onSubmit={addBug}>
-            <label>
-              Bug title
-              <input
-                required
-                maxLength="180"
-                value={bug.title}
-                onChange={e =>
-                  setBug({ ...bug, title: e.target.value })
-                }
-                placeholder="e.g. Save button does not respond"
-              />
-            </label>
-
-            <label>
-              Description
-              <textarea
-                rows="3"
-                value={bug.description}
-                onChange={e =>
-                  setBug({ ...bug, description: e.target.value })
-                }
-                placeholder="Steps to reproduce, expected and actual result"
-              />
-            </label>
-
-            <label>
-              Severity
-              <select
-                value={bug.severity}
-                onChange={e =>
-                  setBug({ ...bug, severity: e.target.value })
-                }
-              >
-                {['low', 'medium', 'high', 'critical'].map(x => (
-                  <option key={x}>{x}</option>
-                ))}
-              </select>
-            </label>
-
-            <button className="primary">
-              <Plus size={15} /> Report bug
-            </button>
+    !project ? needProject : (() => {
+      const allBugs = project.bugs || [];
+      const openCount = allBugs.filter(b => b.status === 'open' || !b.status).length;
+      const activeCount = allBugs.filter(b => b.status === 'in-progress').length;
+      const resolvedCount = allBugs.filter(b => b.status === 'resolved').length;
+      const criticalCount = allBugs.filter(b => ['critical','high'].includes(b.severity) && b.status !== 'resolved').length;
+      const visibleBugs = allBugs.filter(b =>
+        `${b.title} ${b.description || ''}`.toLowerCase().includes(bugSearch.toLowerCase()) &&
+        (bugStatusFilter === 'all' || (b.status || 'open') === bugStatusFilter) &&
+        (bugSeverityFilter === 'all' || b.severity === bugSeverityFilter)
+      );
+      return <>
+        {heading('Bug tracker', `Triage, prioritize and resolve issues in ${project.title}.`)}
+        <div className="work-stats bug-stats">
+          <div className="work-stat"><span className="work-stat-icon blue"><Bug size={17}/></span><small>Total reported</small><strong>{allBugs.length}</strong><span>Issues recorded</span></div>
+          <div className="work-stat"><span className="work-stat-icon red"><AlertTriangle size={17}/></span><small>Open</small><strong>{openCount}</strong><span>Needs triage or a fix</span></div>
+          <div className="work-stat"><span className="work-stat-icon violet"><Activity size={17}/></span><small>In progress</small><strong>{activeCount}</strong><span>Being investigated</span></div>
+          <div className="work-stat"><span className="work-stat-icon green"><CheckCircle2 size={17}/></span><small>Resolved</small><strong>{resolvedCount}</strong><span>{allBugs.length ? Math.round(resolvedCount/allBugs.length*100) : 0}% resolution rate</span></div>
+        </div>
+        {criticalCount > 0 && <div className="bug-alert"><AlertTriangle size={17}/><div><b>{criticalCount} high-severity issue{criticalCount===1?'':'s'} need attention</b><span>Review critical and high issues first.</span></div></div>}
+        <section className="panel bug-create-panel">
+          <div className="work-panel-heading"><div><span className="eyebrow">QUALITY CONTROL</span><h3>Report a bug</h3><p>Good bug reports include clear reproduction steps and expected versus actual behavior.</p></div><span className="work-heading-icon bug-icon"><Bug size={19}/></span></div>
+          <form className="stack-form enhanced-bug-form" onSubmit={addBug}>
+            <label>Bug title<input required maxLength="180" value={bug.title} onChange={e=>setBug({...bug,title:e.target.value})} placeholder="e.g. Appointment form submits without a date"/></label>
+            <label>Summary<textarea rows="2" value={bug.description} onChange={e=>setBug({...bug,description:e.target.value})} placeholder="What went wrong? Include any useful context." /></label>
+            <label>Steps to reproduce<textarea rows="2" value={bug.steps} onChange={e=>setBug({...bug,steps:e.target.value})} placeholder={'1. Open the booking page\n2. Leave date empty\n3. Click Submit'} /></label>
+            <div className="bug-expectation-grid"><label>Expected result<textarea rows="2" value={bug.expected} onChange={e=>setBug({...bug,expected:e.target.value})} placeholder="What should happen?"/></label><label>Actual result<textarea rows="2" value={bug.actual} onChange={e=>setBug({...bug,actual:e.target.value})} placeholder="What happened instead?"/></label></div>
+            <div className="bug-expectation-grid"><label>Bug category<select value={bug.category} onChange={e=>setBug({...bug,category:e.target.value})}>{[['functional','Functional'],['ui','User interface'],['performance','Performance'],['security','Security'],['accessibility','Accessibility'],['data','Data / database'],['other','Other']].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label><label>Environment<input maxLength="160" value={bug.environment} onChange={e=>setBug({...bug,environment:e.target.value})} placeholder="e.g. Chrome, Windows 11, staging"/></label></div>
+            <label>Severity<select value={bug.severity} onChange={e=>setBug({...bug,severity:e.target.value})}>{['low','medium','high','critical'].map(x=><option key={x} value={x}>{x[0].toUpperCase()+x.slice(1)}</option>)}</select></label>
+            <button className="primary"><Plus size={15}/> Submit bug report</button>
           </form>
         </section>
-
-        <section className="panel">
-          {panelTitle('Reported issues', `${project.bugs.length} issue(s)`)}
-
-          {project.bugs.map(b => (
-            <article className="bug-row" key={b.id}>
-              <div>
-                <span className={`priority ${b.severity}`}>
-                  {b.severity}
-                </span>
-                <b>{b.title}</b>
-                <p>{b.description}</p>
-                <small>Reported {date(b.createdAt)}</small>
-              </div>
-
-              <div className="bug-actions">
-                <select
-                  aria-label="Bug status"
-                  value={b.status}
-                  onChange={e =>
-                    updateBug(b.id, { status: e.target.value })
-                  }
-                >
-                  {[
-                    ['open', 'Open'],
-                    ['in-progress', 'In progress'],
-                    ['resolved', 'Resolved']
-                  ].map(([v, l]) => (
-                    <option key={v} value={v}>
-                      {l}
-                    </option>
-                  ))}
-                </select>
-
-                <button
-                  className="icon-button danger"
-                  title="Delete bug"
-                  onClick={() => deleteBug(b.id)}
-                >
-                  <Trash2 size={15} />
-                </button>
-              </div>
-            </article>
-          ))}
-
-          {!project.bugs.length && (
-            <Empty title="No bugs reported">
-              Use the form above to record the first issue.
-            </Empty>
-          )}
+        <section className="panel bug-list-panel">
+          <div className="bug-list-heading"><div><h3>Issue inbox</h3><p>Review reports, update status and keep quality visible.</p></div><div className="bug-list-tools"><button type="button" className="secondary export-button" onClick={() => exportRowsCsv(`${project.title.replace(/[^a-z0-9]+/gi,'-').toLowerCase()}-bugs.csv`, [['Title','Description','Category','Severity','Status','Environment','Steps','Expected','Actual','Reported','Updated'], ...visibleBugs.map(b => [b.title,b.description,b.category,b.severity,b.status,b.environment,b.steps,b.expected,b.actual,b.createdAt,b.updatedAt])])}><FileText size={14}/> Export CSV</button><span className="issue-total">{allBugs.length} issue{allBugs.length===1?'':'s'}</span></div></div>
+          <div className="work-toolbar bug-toolbar">
+            <label className="work-search"><Search size={16}/><input value={bugSearch} onChange={e=>setBugSearch(e.target.value)} placeholder="Search issues…"/></label>
+            <label className="work-filter"><Filter size={15}/><select value={bugStatusFilter} onChange={e=>setBugStatusFilter(e.target.value)}><option value="all">All statuses</option><option value="open">Open</option><option value="in-progress">In progress</option><option value="resolved">Resolved</option></select></label>
+            <label className="work-filter"><Filter size={15}/><select value={bugSeverityFilter} onChange={e=>setBugSeverityFilter(e.target.value)}><option value="all">All severities</option>{['critical','high','medium','low'].map(x=><option key={x} value={x}>{x[0].toUpperCase()+x.slice(1)}</option>)}</select></label>
+          </div>
+          <div className="bug-list-summary"><span><i className="status-dot open"></i> {openCount} open</span><span><i className="status-dot in-progress"></i> {activeCount} in progress</span><span><i className="status-dot done"></i> {resolvedCount} resolved</span><span className="results-count">Showing {visibleBugs.length} of {allBugs.length}</span></div>
+          {visibleBugs.map(b=><article className="bug-row enhanced-bug-row" key={b.id}>
+            <div className="bug-main"><div className="bug-badges"><span className={`priority ${b.severity}`}>{b.severity==='critical'?'⚡ Critical':b.severity}</span><span className={`bug-status-pill ${b.status || 'open'}`}>{(b.status||'open').replace('-', ' ')}</span><span className="bug-id">BUG-{String(b.id || '').slice(-5).toUpperCase()}</span></div><b>{b.title}</b>{b.description && <p>{b.description}</p>}<div className="bug-meta-chips">{b.category && <span>{({functional:'Functional',ui:'UI',performance:'Performance',security:'Security',accessibility:'Accessibility',data:'Data',other:'Other'})[b.category] || b.category}</span>}{b.environment && <span>{b.environment}</span>}</div>{(b.steps || b.expected || b.actual) && <details className="bug-detail"><summary>Reproduction & expected behavior</summary>{b.steps && <p><b>Steps to reproduce</b><br/>{b.steps}</p>}{b.expected && <p><b>Expected</b><br/>{b.expected}</p>}{b.actual && <p><b>Actual</b><br/>{b.actual}</p>}</details>}<small>Reported {date(b.createdAt)}{b.updatedAt ? ` · Updated ${date(b.updatedAt)}` : ''}</small></div>
+            <div className="bug-actions"><label className="bug-status-control">Status<select aria-label={`Status for ${b.title}`} value={b.status || 'open'} onChange={e=>updateBug(b.id,{status:e.target.value})}>{[['open','Open'],['in-progress','In progress'],['resolved','Resolved']].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label><button className="icon-button danger" title="Delete bug" aria-label={`Delete ${b.title}`} onClick={()=>deleteBug(b.id)}><Trash2 size={15}/></button></div>
+          </article>)}
+          {!visibleBugs.length && <Empty title={allBugs.length?'No matching issues':'No bugs reported yet'}>{allBugs.length?'Try a different search or filter.':'When you find an issue, report it here with steps and expected results so your team can reproduce it.'}</Empty>}
         </section>
-      </>
-    );
+      </>;
+    })();
 
   const docsPage = () =>
     !project ? (
